@@ -26,7 +26,7 @@ export class User extends IdEntity {
   idDocument!: string;
 
   @Index('user_role_index')
-  @Column({ nullable: false, default: UserRole.Administrativessistant })
+  @Column({ nullable: false, default: UserRole.SalesAdvisor })
   role!: string;
 
   @ApiHideProperty()

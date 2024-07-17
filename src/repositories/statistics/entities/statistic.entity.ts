@@ -1,8 +1,9 @@
 export class Statistic {}
 
 export interface Counters {
-  patients: number;
+  customers: number;
   users: number;
-  studies: number;
-  exams: number;
+  sales: number;
+  products: number;
+  orders: number;
 }

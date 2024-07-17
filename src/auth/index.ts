@@ -2,6 +2,7 @@
 export * from './auth.controller';
 export * from './auth.module';
 export * from './change-password';
+export * from './cookies';
 export * from './jwt-auth';
 export * from './login';
 export * from './logout';

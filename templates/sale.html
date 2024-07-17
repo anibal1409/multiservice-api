@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Nota de entrega</title>
+  <style>
+    * {
+      font-size: 0.75rem;
+      font-family: Arial, sans-serif;
+    }
+
+    .mb-2 {
+      margin-bottom: 0.5rem
+    }
+
+    .image {
+      width: 10rem;
+      margin-right: 1rem;
+      margin-top: -4rem;
+    }
+
+    .title {
+      text-align: center;
+      text-decoration: underline;
+      font-size: 2rem;
+      font-weight: 700;
+      display: inline;
+    }
+
+    .image-right {
+      width: 5rem;
+      position: absolute;
+      top: 2rem;
+      right: 1rem;
+    }
+
+    .image-left {
+      width: 5rem;
+      position: absolute;
+      top: 4rem;
+      left: 1rem;
+    }
+
+    .title-container {
+      width: 100%;
+    }
+
+    .header-container {
+      width: 100%;
+    }
+
+    .date-container {
+      margin: 1rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.products {
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+    }
+
+    table.footer {
+      font-size: 0.5rem;
+      color: #444;
+    }
+
+    th,
+    td {
+      border: none;
+      padding: 2px;
+      text-align: left;
+    }
+
+    th {
+      /* background-color: #f2f2f2; */
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .w-100 {
+      width: 100%;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .underline {
+      text-decoration: underline;
+    }
+
+    .right {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <p class="center w-100 bold underline">{{ companyName }}</p>
+  <p class="center w-100 bold underline">{{ companyDocument }}</p>
+  <p class="center w-100 bold underline">{{ companyAddress }}</p>
+  
+  <img class="image image-left" src="{{imgSystem}}" data-iml="5230848.099999994" />
+
+  <p class="center w-100 underline">NOTA DE ENTREGA</p>
+  
+  <br>
+
+  <p class="right w-100 "><span class="bold">Fecha:</span> {{ sale.date }}</p>
+
+
+
+  <p><span class="bold">Cliente:</span> {{ customer.idDocument }} - {{ customer.firstName }}, {{ customer.lastName }}.
+  </p>
+
+  <p class="center w-100 underline">Detalles de los productos</p>
+  <table class="products">
+    <thead>
+      <tr>
+        <th>N</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Cantidad</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each products}}
+      <tr>
+        <td>{{ product.index }}</td>
+        <td>{{ product.name }}</td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.amount }}</td>
+        <td>{{ product.subtotal }}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+
+  <p class="right w-100 "><span class="bold">Total:</span> {{ sale.total }}</p>
+
+</body>
+
+
+</html>

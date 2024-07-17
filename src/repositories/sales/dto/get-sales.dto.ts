@@ -28,13 +28,13 @@ export class GetSalesDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsDateString()
-  date?: Date;
+  @IsString()
+  stage?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  stage?: string;
+  @IsDateString()
+  date?: Date;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -55,4 +55,9 @@ export class GetSalesDto {
   @IsOptional()
   @IsDateString()
   end: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  order?: 'ASC' | 'DESC';
 }

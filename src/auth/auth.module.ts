@@ -7,7 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 
 import { MailModule } from '../mail';
-import { UsersModule } from '../repositories';
+import { UsersModule } from '../repositories/users';
 import { AuthController } from './auth.controller';
 import { ChangePasswordService } from './change-password';
 // eslint-disable-next-line prettier/prettier
@@ -17,7 +17,7 @@ import {
 } from './jwt-auth';
 import { JwtAuthService } from './jwt-auth/jwt-auth.service';
 import { LoginService } from './login/login.service';
-import { LogoutService } from './logout';
+import { LogoutService } from './logout/logout.service';
 import { RecoveryPasswordService } from './recovery-password';
 // eslint-disable-next-line prettier/prettier
 import {

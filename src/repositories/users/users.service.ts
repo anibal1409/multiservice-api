@@ -8,14 +8,20 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { hashPassword } from '../../auth/password-hasher';
+import {
+  comparePassword,
+  hashPassword,
+} from '../../auth/password-hasher';
 import { CrudRepository } from '../../common/use-case';
 import { MailService } from '../../mail';
-import { CustomersService } from '../customers/customers.service';
-import { UserRespondeDto } from './dto';
+import {
+  ChangePasswordUserDto,
+  UserRespondeDto,
+} from './dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities';
@@ -27,7 +33,6 @@ export class UsersService implements CrudRepository<User> {
     @InjectRepository(User)
     private readonly repository: Repository<User>,
     private readonly mailService: MailService,
-    private readonly patientsService: CustomersService,
   ) {}
 
   async findValid(id: number): Promise<User> {
@@ -35,7 +40,7 @@ export class UsersService implements CrudRepository<User> {
       where: {
         id,
       },
-      relations: ['patient'],
+      relations: [],
     });
     if (!entity) {
       throw new NotFoundException('Usuario no encontrado');
@@ -95,17 +100,17 @@ export class UsersService implements CrudRepository<User> {
       await hashPassword(Date.now().toString())
     ).substring(0, 10);
 
+    console.log(passwordDefault);
     const user = this.repository.create({
       email: creatrDto.email,
-      password: await hashPassword(passwordDefault),
+      // password: await hashPassword(passwordDefault),
+      password: '$2b$10$9lMnPrQ24HTTjNswGp7QfOKlIfY1QUWsy6lZnA2Sr58HD6/W53LwK',
       lastName: creatrDto.lastName,
       firstName: creatrDto.firstName,
       role: creatrDto.role,
       idDocument: creatrDto.idDocument,
       birthdate: creatrDto.birthdate,
     });
-
-    console.log(user);
 
     const _userRes = await this.repository.save(user);
 
@@ -202,6 +207,52 @@ export class UsersService implements CrudRepository<User> {
 
     await this.repository.save({
       password: await hashPassword(newPassword),
+      ...response,
+    });
+
+    return true;
+  }
+
+  async updatePassword(
+    id: number,
+    email: string,
+    changePasswordUserDto: ChangePasswordUserDto,
+  ): Promise<boolean> {
+    if (!changePasswordUserDto.currentPassword) {
+      throw new BadRequestException('Contrasena actual requerida');
+    } else if (!changePasswordUserDto.newPassword) {
+      throw new BadRequestException('Nueva contrasena requerida');
+    } else if (
+      changePasswordUserDto.newPassword !==
+      changePasswordUserDto.confirmPassword
+    ) {
+      throw new BadRequestException(
+        'Nueva contrasena y confirmacion no coinciden',
+      );
+    }
+
+    const user = await this.findOneByEmail(email);
+    console.log(id, email, user);
+    if (!user) {
+      throw new NotFoundException(`Usuario no encontrado`);
+    } else if (user.id != id) {
+      throw new BadRequestException('ID es invalido');
+    } else if (user.email != email) {
+      throw new BadRequestException('E-mail es invalido');
+    } else if (
+      !(await comparePassword(
+        changePasswordUserDto.currentPassword,
+        user.password,
+      ))
+    ) {
+      throw new UnauthorizedException('Contraseña inválida.');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _oldPassword, ...response } = user;
+
+    await this.repository.save({
+      password: await hashPassword(changePasswordUserDto.newPassword),
       ...response,
     });
 

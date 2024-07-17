@@ -18,7 +18,7 @@ import {
   GetProductsDto,
   ProductRespondeDto,
 } from './dto';
-import { CreateProductDto } from './dto/product.dto';
+import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities';
 
@@ -27,7 +27,7 @@ export class ProductsService implements CrudRepository<Product> {
   constructor(
     @InjectRepository(Product)
     private readonly repository: Repository<Product>,
-  ) {}
+  ) { }
 
   async findValid(id: number): Promise<Product> {
     const entity = await this.repository.findOne({
@@ -53,7 +53,6 @@ export class ProductsService implements CrudRepository<Product> {
   }
 
   async create(createDto: CreateProductDto): Promise<ProductRespondeDto> {
-    console.log(createDto);
     if (await this.findByIdName(createDto.name)) {
       throw new BadRequestException('Producto ya existe.');
     }
@@ -103,6 +102,7 @@ export class ProductsService implements CrudRepository<Product> {
       category: {
         id: updateDto.category.id,
       },
+      stock: updateDto.stock,
     });
 
     return this.findOne(item.id);
@@ -118,7 +118,30 @@ export class ProductsService implements CrudRepository<Product> {
     return await this.repository.count({
       where: {
         deleted: false,
+        status: true,
       },
     });
+  }
+
+  async findByIds(ids: number[]): Promise<Product[]> {
+    const products: Product[] = [];
+    await Promise.all(
+      ids.map(async (id) => {
+        const product = await this.repository.findOne({
+          where: {
+            id,
+          },
+        });
+        if (product) {
+          products.push(product);
+        }
+      }),
+    );
+
+    return products;
+  }
+
+  saveMany(products: Product[]): Promise<Product[]> {
+    return this.repository.save(products);
   }
 }

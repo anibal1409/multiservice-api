@@ -14,14 +14,14 @@ export class OrderProduct {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
-  price!: string;
+  @Column('decimal', { nullable: false })
+  price!: number;
 
-  @Column({ nullable: true })
-  amount!: string;
+  @Column('decimal', { nullable: false })
+  amount!: number;
 
-  @Column({ nullable: true })
-  total!: string;
+  @Column('decimal', { nullable: false })
+  subtotal!: number;
 
   @ManyToOne(() => Product, (product) => product.orders)
   product: Product;

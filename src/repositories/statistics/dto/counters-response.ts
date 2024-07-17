@@ -9,7 +9,7 @@ export class CountersRespondeDto {
   @ApiProperty()
   @IsNotEmpty()
   @Type(() => Number)
-  patients: number;
+  customers: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -19,17 +19,23 @@ export class CountersRespondeDto {
   @ApiProperty()
   @IsNotEmpty()
   @Type(() => Number)
-  studies: number;
+  sales: number;
 
   @ApiProperty()
   @IsNotEmpty()
   @Type(() => Number)
-  exams: number;
+  products: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Type(() => Number)
+  orders: number;
 
   constructor(data: Counters) {
-    this.exams = data.exams;
-    this.patients = data.patients;
-    this.studies = data.studies;
+    this.products = data.products;
+    this.customers = data.customers;
+    this.sales = data.sales;
     this.users = data.users;
+    this.orders = data.orders;
   }
 }

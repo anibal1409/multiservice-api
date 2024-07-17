@@ -49,6 +49,11 @@ export class ProductRespondeDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  @Type(() => Number)
+  stock: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
   @Type(() => Category)
   category: Category;
 
@@ -59,6 +64,7 @@ export class ProductRespondeDto {
     this.description = data.description;
     this.price = data.price;
     this.path = data?.path;
+    this.stock = data.stock;
     this.category = data.category;
   }
 }

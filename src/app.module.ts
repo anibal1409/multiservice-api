@@ -1,3 +1,4 @@
+import { join } from 'path';
 import {
   DataSource,
   getConnectionOptions,
@@ -17,7 +18,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth';
-import { DefaultAssetsFolder } from './reports/types/config';
 import { RepositoriesModule } from './repositories/repositories.module';
 
 @Global()
@@ -54,7 +54,9 @@ import { RepositoriesModule } from './repositories/repositories.module';
     RepositoriesModule,
     AuthModule,
     ServeStaticModule.forRoot({
-      rootPath: DefaultAssetsFolder,
+      rootPath: join(__dirname, '../..', 'public'),
+      exclude: ['/api/(.*)'],
+      serveRoot: '/public',
       renderPath: 'public',
     }),
   ],

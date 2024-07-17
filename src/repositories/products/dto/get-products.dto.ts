@@ -32,6 +32,11 @@ export class GetProductsDto {
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
+  stock?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
   moreOrequal?: number;
 
   @ApiPropertyOptional()

@@ -1,35 +1,40 @@
 import {
   Column,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
 } from 'typeorm';
 
 import { IdEntity } from '../../base';
+import { User } from '../../users/entities';
+import { StageOrder } from '../enums';
 import { OrderProduct } from './orderProduct.entity';
 
 @Entity()
 export class Order extends IdEntity {
   @Column({ nullable: false })
-  provider!: string;
+  date!: Date;
 
   @Column({ nullable: false })
+  provider!: string;
+
+  @Column({ nullable: false, default: StageOrder.Required })
   stage!: string;
 
   @Column({ nullable: true })
-  description?: string;
+  note?: string;
 
-  @Column({ nullable: false })
-  iva!: number;
-
-  @Column({ nullable: false })
-  subtotal!: number;
-
-  @Column({ nullable: false })
+  @Column('decimal', { nullable: false })
   total!: number;
 
-  @Column({ nullable: false })
-  deadline!: Date;
+  @Column({ nullable: true })
+  deadline?: Date;
 
   @OneToMany(() => OrderProduct, (orderProducts) => orderProducts.order)
   orderProducts: OrderProduct[];
+
+  @ManyToOne(() => User, (user) => user.id)
+  @JoinColumn()
+  user?: User;
 }

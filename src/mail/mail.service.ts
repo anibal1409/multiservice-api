@@ -1,5 +1,8 @@
+import { createTransport } from 'nodemailer';
+
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import {
   recovery,
@@ -8,7 +11,30 @@ import {
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService) {}
+  private readonly transporter = createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      type: 'OAuth2',
+      user: this.configService.get('MAILER_USER'),
+      clientId: this.configService.get('MAILER_CLIENT_ID'),
+      clientSecret: this.configService.get('MAILER_CLIENT_SECRET'),
+      accessUrl: 'https://oauth2.googleapis.com/token',
+    },
+  });
+
+  async sendMail(options: { to: string; subject: string; text: string }) {
+    await this.transporter.sendMail({
+      ...options,
+      from: this.configService.get('MAILER_FROM'),
+    });
+  }
+  constructor(
+    private mailerService: MailerService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Funcion para mandar un correo con el token `url_` de recuperacion al `email_` especificado.
@@ -38,9 +64,20 @@ export class MailService {
     password_: string
   ): Promise<boolean> {
     try {
+      // await this.sendMail({
+      //   subject: `${this.configService.get('COMPANY_NAME')} - Bienvenido`,
+      //   text: welcome(
+      //     email_,
+      //     user_,
+      //     role_,
+      //     password_,
+      //     'http://localhost:4200/login',
+      //   ),
+      //   to: email_,
+      // });
       await this.mailerService.sendMail({
         to: email_,
-        subject: 'Laboratorio BRIMON  - Bienvenido',
+        subject: `${this.configService.get('COMPANY_NAME')} - Bienvenido`,
         html: welcome(
           email_,
           user_,
@@ -48,6 +85,7 @@ export class MailService {
           password_,
           'http://localhost:4200/login',
         ),
+        from: this.configService.get('MAILER_FROM'),
       });
     } catch (error) {
       console.log(3333, error);

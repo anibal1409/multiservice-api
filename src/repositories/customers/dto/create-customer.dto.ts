@@ -9,7 +9,6 @@ import {
 // eslint-disable-next-line prettier/prettier
 import {
   ApiProperty,
-  ApiPropertyOptional,
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
@@ -19,12 +18,6 @@ import { Customer } from '../entities';
 export class CreateCustomerDto extends PartialType(
   OmitType(Customer, ['updatedAt', 'createdAt', 'deleted']),
 ) {
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsEmail()
-  @IsString()
-  email!: string;
-
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
@@ -37,16 +30,22 @@ export class CreateCustomerDto extends PartialType(
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
-  address: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
   @IsBoolean()
   status!: boolean;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   phone: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  type: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsEmail()
+  @IsString()
+  email!: string;
 }

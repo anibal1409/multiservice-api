@@ -8,17 +8,22 @@ import {
 
 // eslint-disable-next-line prettier/prettier
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { CrudRepository } from '../../common';
+import {
+  CrudRepository,
+  formatNumberToDigits,
+} from '../../common';
 import { ReportsService } from '../../reports/reports.service';
+import { ProductsService } from '../products/products.service';
 // eslint-disable-next-line prettier/prettier
 import {
   GetSalesDto,
-  StudyRespondeDto,
+  SaleRespondeDto,
 } from './dto';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-study.dto';
@@ -27,7 +32,11 @@ import {
   Sale,
   SaleProduct,
 } from './entities';
-import { StageStudy } from './enums';
+import {
+  STAGE_STATISTICS,
+  STAGE_STUDY_VALUE,
+  StageSale,
+} from './enums';
 
 @Injectable()
 export class SalesService implements CrudRepository<Sale> {
@@ -35,46 +44,50 @@ export class SalesService implements CrudRepository<Sale> {
     @InjectRepository(Sale)
     private readonly repository: Repository<Sale>,
     @InjectRepository(SaleProduct)
-    private readonly repositoryStudyExams: Repository<SaleProduct>,
+    private readonly repositorySaleProducts: Repository<SaleProduct>,
     private readonly reportsService: ReportsService,
+    private readonly productsService: ProductsService,
   ) {}
 
   async findValid(id: number): Promise<Sale> {
+    if (!id) {
+      throw new BadRequestException('ID null');
+    }
     const entity = await this.repository.findOne({
       where: {
         id,
       },
 
-      relations: [
-        'customer',
-        'saleProduct',
-        'saleProduct.product',
-        'saleService',
-        'saleService.service',
-      ],
+      relations: ['customer', 'saleProducts', 'saleProducts.product'],
     });
     if (!entity) {
-      throw new NotFoundException('Estudio no encontrado');
+      throw new NotFoundException('Venta no encontrada');
     }
     return entity;
   }
 
-  async create(createDto: CreateSaleDto): Promise<StudyRespondeDto> {
-    console.log('createDto', createDto);
+  async create(createDto: CreateSaleDto): Promise<SaleRespondeDto> {
     const item = await this.repository.save(createDto);
-    // const studyExams = createDto.studyExams.map((studyExam) => {
-    //   return {
-    //     exam: {
-    //       id: studyExam.exam.id,
-    //     },
-    //     study: {
-    //       id: item.id,
-    //     },
-    //     value: studyExam.value,
-    //   };
-    // });
+    const ids: number[] = [];
+    const saleProducts = createDto.saleProducts.map((saleProduct) => {
+      ids.push(saleProduct.product.id);
+      return {
+        product: {
+          id: saleProduct.product.id,
+        },
+        sale: {
+          id: item.id,
+        },
+        price: saleProduct.price,
+        amount: saleProduct.amount,
+        subtotal: saleProduct.subtotal,
+      };
+    });
 
-    // await this.repositoryStudyExams.save(studyExams);
+    await this.repositorySaleProducts.save(saleProducts);
+    if (![StageSale.Cancelled].includes(item.stage as any)) {
+      await this.updateProductsCreate(ids, saleProducts);
+    }
 
     return await this.findOne(item.id);
   }
@@ -84,78 +97,101 @@ export class SalesService implements CrudRepository<Sale> {
       .startOf('day')
       .toDate();
     const end = moment(data?.end)
-      .startOf('day')
+      .endOf('day')
       .toDate();
 
     return this.repository.find({
       where: {
         deleted: false,
-        stage: data?.stage,
         customer: {
           id: data?.customerId,
         },
         date: !!data?.start ? Between(start, end) : null,
+        stage: data?.stage,
       },
       order: {
-        date: 'DESC',
+        date: data?.order || 'DESC',
       },
       relations: [
         'customer',
-        'saleProduct',
-        'saleProduct.product',
-        'saleProduct.product.category',
-        'saleService',
-        'saleService.service',
-        'saleService.service.category',
+        'saleProducts',
+        'saleProducts.product',
+        'saleProducts.product.category',
       ],
     });
   }
 
-  async findOne(id: number): Promise<StudyRespondeDto> {
+  async findOne(id: number): Promise<SaleRespondeDto> {
     const item = await this.findValid(id);
-    console.log(item);
-    
-    return new StudyRespondeDto(item);
+    return new SaleRespondeDto(item);
   }
 
-  async update(
-    id: number,
-    updateDto: UpdateSaleDto,
-  ): Promise<StudyRespondeDto> {
-    const item = await this.repository.save({
+  async update(id: number, updateDto: UpdateSaleDto): Promise<SaleRespondeDto> {
+    const item = await this.findValid(id);
+    const save = await this.repository.save({
       id,
       note: updateDto.note,
       customer: {
         id: updateDto.customer.id,
       },
-      sendEmail: updateDto.sendEmail,
-      stage: updateDto.stage,
       total: updateDto.total,
       date: updateDto.date,
+      stage: updateDto.stage,
     });
 
-    // const studyExams = updateDto.studyExams.map((studyExam) => {
-    //   return {
-    //     id: studyExam.id,
-    //     exam: {
-    //       id: studyExam.exam.id,
-    //     },
-    //     study: {
-    //       id,
-    //     },
-    //     value: studyExam.value,
-    //   };
-    // });
+    const ids: number[] = [];
+    item.saleProducts.forEach((saleProduct) => {
+      ids.push(saleProduct.product.id);
+    });
 
-    // this.repositoryStudyExams.save(studyExams);
+    const salesProducts = updateDto.saleProducts.map((saleProduct) => {
+      ids.push(saleProduct.product.id);
+      return {
+        id: saleProduct.id,
+        product: {
+          id: saleProduct.product.id,
+        },
+        sale: {
+          id,
+        },
+        price: saleProduct.price,
+        amount: saleProduct.amount,
+        subtotal: saleProduct.subtotal,
+      };
+    });
 
-    return this.findOne(item.id);
+    await this.repositorySaleProducts.delete({
+      sale: {
+        id,
+      },
+    });
+
+    this.repositorySaleProducts.save(salesProducts);
+    await this.updateProductsUpdate(
+      ids,
+      item.saleProducts,
+      salesProducts,
+      item.stage as any,
+    );
+
+    return this.findOne(save.id);
   }
 
-  async remove(id: number): Promise<StudyRespondeDto> {
+  async remove(id: number): Promise<SaleRespondeDto> {
     const item = await this.findValid(id);
     item.deleted = true;
-    return new StudyRespondeDto(await this.repository.save(item));
+
+    const ids: number[] = [];
+    item.saleProducts.forEach((saleProduct) => {
+      ids.push(saleProduct.product.id);
+    });
+    await this.updateProductsUpdate(
+      ids,
+      item.saleProducts,
+      item.saleProducts,
+      StageSale.Cancelled,
+    );
+    return new SaleRespondeDto(await this.repository.save(item));
   }
 
   async count(): Promise<number> {
@@ -164,97 +200,100 @@ export class SalesService implements CrudRepository<Sale> {
     return await this.repository.count({
       where: {
         deleted: false,
-        stage: In([
-          StageStudy.Delivered,
-          StageStudy.Downloaded,
-          StageStudy.Printed,
-          StageStudy.Sent,
-        ]),
         date: Between(startMonth, endMonth),
+        stage: In(STAGE_STATISTICS),
       },
     });
   }
 
-  async generateMonthlyExamStatistics(data?: GetSalesDto): Promise<
+  async generateMonthlySaleStatistics(data?: GetSalesDto): Promise<
     {
-      examName: string;
+      productName: string;
       count: number;
     }[]
   > {
     // Obtener estudios realizados en el mes y año especificados
-    const studies = await this.findAll(data);
-    console.log('generateMonthlyExamStatistics', studies);
+    const sales = await this.findAll(data);
+    console.log('generateMonthlyExamStatistics', sales);
 
     // Inicializar mapa para contar la cantidad de cada tipo de examen realizado
-    const examCounts = new Map<string, number>();
+    const productsCounts = new Map<string, number>();
 
     // Contar la cantidad de cada tipo de examen realizado
     await Promise.all(
-      studies.map(async (study) => {
-        await Promise.all(
-          study.saleProducts.map(async (studyExam) => {
-            const examName = studyExam.product.name;
-            examCounts.set(examName, (examCounts.get(examName) || 0) + 1);
-          }),
-        );
+      sales.map(async (sale) => {
+        if (STAGE_STATISTICS.includes(sale.stage as any)) {
+          await Promise.all(
+            sale.saleProducts.map(async (saleProduct) => {
+              const productName = saleProduct.product.name;
+              productsCounts.set(
+                productName,
+                (productsCounts.get(productName) || 0) + +saleProduct.amount,
+              );
+            }),
+          );
+        }
       }),
     );
 
     // Ordenar los tipos de examen por la cantidad de veces que se han realizado
-    const sortedExamCounts = [...examCounts.entries()].sort(
+    const sortedProductsCounts = [...productsCounts.entries()].sort(
       (a, b) => b[1] - a[1],
     );
 
-    console.log(sortedExamCounts);
+    console.log(sortedProductsCounts);
 
     // Convertir el mapa en un arreglo de objetos
-    const examStatisticsArray = sortedExamCounts.map(([examName, count]) => ({
-      examName,
-      count,
-    }));
+    const productStatisticsArray = sortedProductsCounts.map(
+      ([productName, count]) => ({
+        productName,
+        count,
+      }),
+    );
 
     // Retorna los tipos de examen más realizados en el mes como un arreglo de objetos
-    return examStatisticsArray;
+    return productStatisticsArray;
   }
 
-  async generateMonthlyExamTypeStatistics(
+  async generateMonthlyCategoriesStatistics(
     data?: GetSalesDto,
-  ): Promise<{ examType: string; count: number }[]> {
+  ): Promise<{ category: string; count: number }[]> {
     try {
       // Obtener estudios realizados en el mes y año especificados
-      const studies = await this.findAll(data);
+      const sales = await this.findAll(data);
 
       // Inicializar un mapa para almacenar la cantidad de exámenes por tipo
-      const examTypeCounts = new Map<string, number>();
+      const categoryCounts = new Map<string, number>();
 
       // Contar la cantidad de exámenes realizados por tipo
       await Promise.all(
-        studies.map(async (study) => {
-          await Promise.all(
-            study.saleProducts.map(async (studyExam) => {
-              console.log(studyExam.product);
-              const examType = studyExam.product?.category?.name;
-              if (examType) {
-                examTypeCounts.set(
-                  examType,
-                  (examTypeCounts.get(examType) || 0) + 1,
-                );
-              }
-            }),
-          );
+        sales.map(async (sale) => {
+          if (STAGE_STATISTICS.includes(sale.stage as any)) {
+            await Promise.all(
+              sale.saleProducts.map(async (saleProduct) => {
+                const category = saleProduct.product?.category?.name;
+                if (category) {
+                  categoryCounts.set(
+                    category,
+                    (categoryCounts.get(category) || 0) + +saleProduct.amount,
+                  );
+                }
+              }),
+            );
+          }
         }),
       );
 
       // Convertir el mapa en un arreglo de objetos
-      const examTypeStatisticsArray = Array.from(examTypeCounts.entries()).map(
-        ([examType, count]) => ({
-          examType,
+      const categoryStatisticsArray = Array.from(categoryCounts.entries()).map(
+        ([category, count]) => ({
+          category,
           count,
         }),
       );
 
       // Retorna el arreglo con la cantidad de exámenes realizados por tipo
-      return examTypeStatisticsArray;
+      return categoryStatisticsArray;
     } catch (error) {
       // Manejar errores
       console.error('Error en generateMonthlyExamTypeStatistics:', error);
@@ -262,15 +301,114 @@ export class SalesService implements CrudRepository<Sale> {
     }
   }
 
-
   async getPDF(id: number) {
     const item = await this.findOne(id);
-    return this.reportsService.generatePdf(
-      'Laboratorio BRIMON',
-      item.patient,
-      item as any,
-      [],
-      // item.studyExams,
+    const item2 = { ...item };
+    const USDollar = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+    const saleProducts = item.saleProducts.map((saleProduct, i) => ({
+      price: USDollar.format(+saleProduct.price),
+      amount: saleProduct.amount,
+      subtotal: USDollar.format(+saleProduct.subtotal),
+      name: (saleProduct.product as any)?.name,
+      index: i + 1,
+      product: {
+        ...saleProduct.product,
+        price: USDollar.format(+saleProduct.price),
+        amount: saleProduct.amount,
+        subtotal: USDollar.format(+saleProduct.subtotal),
+        index: i + 1,
+      },
+    }));
+    item.total = USDollar.format(+item.total) as any;
+
+    return this.reportsService
+      .generatePdfSale(item.customer, item as any, saleProducts as any)
+      .finally(() => {
+        item2.stage = StageSale.Printed;
+        this.update(id, item2);
+      });
+  }
+
+  async getReportSales(data: GetSalesDto) {
+    let sales = await this.findAll({ ...data, order: 'ASC' });
+    const USDollar = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+
+    sales = sales?.map((sale, index) => ({
+      index: index + 1,
+      totalF: USDollar.format(+sale.total),
+      date: moment(sale.date).format('DD/MM/YYYY HH:mm'),
+      stage: STAGE_STUDY_VALUE[sale.stage].name,
+      total: sale.total,
+      code: formatNumberToDigits(sale.id),
+      products: sale.saleProducts?.reduce(
+        (accumulator: number, currentValue: SaleProduct) =>
+          accumulator + +currentValue.amount,
+        0,
+      ),
+    })) as any;
+    const total = sales?.reduce(
+      (accumulator: number, currentValue: Sale) =>
+        accumulator + +currentValue.total,
+      0,
     );
+    return this.reportsService.generateReport(
+      sales,
+      USDollar.format(+total),
+      data.start,
+      data.end,
+    );
+  }
+
+  async updateProductsCreate(ids: number[], saleProducts: any[]) {
+    let products = await this.productsService.findByIds(ids);
+    products = products.map((product) => {
+      const saleProduct: any = saleProducts.find(
+        (saleProduct) => saleProduct.product.id === product.id,
+      );
+      return {
+        ...product,
+        stock: product.stock - (saleProduct?.amount || 0),
+      };
+    });
+    await this.productsService.saveMany(products);
+  }
+
+  async updateProductsUpdate(
+    ids: number[],
+    oldSaleProducts: any[],
+    newSaleProducts: any[],
+    stage: StageSale,
+  ) {
+    let products = await this.productsService.findByIds(ids);
+
+    products = products.map((product) => {
+      const saleProduct: any = oldSaleProducts.find(
+        (saleProduct) => saleProduct.product.id === product.id,
+      );
+      return {
+        ...product,
+        stock: product.stock + (+saleProduct?.amount || 0),
+      };
+    });
+
+    if (![StageSale.Cancelled].includes(stage)) {
+      products = products.map((product) => {
+        const saleProduct: any = newSaleProducts.find(
+          (saleProduct) => saleProduct.product.id === product.id,
+        );
+        return {
+          ...product,
+          stock: product.stock - (+saleProduct?.amount || 0),
+        };
+      });
+    }
+
+    await this.productsService.saveMany(products);
   }
 }

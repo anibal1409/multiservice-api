@@ -10,11 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UsersService } from '../../repositories/users';
 import { getDefaultCokieOptions } from '../cookies';
+import { JWT_CONST } from '../jwt-auth/constants';
 // eslint-disable-next-line prettier/prettier
-import {
-  JWT_CONST,
-  JwtAuthService,
-} from '../jwt-auth';
+import { JwtAuthService } from '../jwt-auth/jwt-auth.service';
 import { comparePassword } from '../password-hasher';
 // eslint-disable-next-line prettier/prettier
 import {
@@ -48,6 +46,7 @@ export class LoginService {
     const secretData = {
       token: _token,
       id,
+      email,
     };
 
     const _expiredTime = parseInt(

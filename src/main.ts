@@ -26,8 +26,8 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const config = new DocumentBuilder()
-    .setTitle('Laboratory')
-    .setDescription('The Laboratory-API description')
+    .setTitle('MI PROFE')
+    .setDescription('The MI PROFE-API description')
     .setVersion('1.0')
     .addCookieAuth()
     .addServer('api')

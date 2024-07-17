@@ -20,8 +20,11 @@ export class Product extends IdEntity {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ nullable: false })
+  @Column('decimal', { nullable: false })
   price!: number;
+
+  @Column({ nullable: false })
+  stock!: number;
 
   @Column({ nullable: true })
   path!: string;

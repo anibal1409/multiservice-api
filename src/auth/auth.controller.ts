@@ -24,11 +24,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { CreateUserDto } from '../repositories/users/dto';
 // eslint-disable-next-line prettier/prettier
-import {
-  CreateUserDto,
-  UsersService,
-} from '../repositories/users';
+import { UsersService } from '../repositories/users/users.service';
 import {
   ChangePasswordDto,
   ChangePasswordResponseDto,

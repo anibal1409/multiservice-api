@@ -18,7 +18,10 @@ import {
 } from '@nestjs/swagger';
 
 import { Public } from '../../auth/login/login.guard';
-import { UserRespondeDto } from './dto';
+import {
+  ChangePasswordUserDto,
+  UserRespondeDto,
+} from './dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
@@ -45,6 +48,21 @@ export class UsersController {
     return this.usersService.update(
       +request.cookies?.['app-cookie']?.id,
       updateUserDto,
+    );
+  }
+
+  @Post('profile/change-password')
+  @ApiResponse({
+    type: UserRespondeDto,
+  })
+  changePassword(
+    @Req() request: Request,
+    @Body() changePasswordUserDto: ChangePasswordUserDto,
+  ) {
+    return this.usersService.updatePassword(
+      +request.cookies?.['app-cookie']?.id,
+      request.cookies?.['app-cookie']?.email,
+      changePasswordUserDto,
     );
   }
 

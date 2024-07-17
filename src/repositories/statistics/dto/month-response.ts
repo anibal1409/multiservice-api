@@ -7,7 +7,7 @@ import {
 
 import { ApiProperty } from '@nestjs/swagger';
 
-class SaleDto {
+class SaleGenderDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -28,14 +28,19 @@ export class MonthRespondeDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  category: { [key: string]: number };
+  categories: { [key: string]: number };
 
-  @ApiProperty({ type: SaleDto, isArray: true })
+  @ApiProperty()
   @IsNotEmpty()
-  sales: SaleDto[];
+  products: { [key: string]: number };
+
+  // @ApiProperty({ type: SaleGenderDto, isArray: true })
+  // @IsNotEmpty()
+  // sales: SaleGenderDto[];
 
   constructor(data: any) {
-    this.sales = data.sales;
-    this.category = data.category;
+    // this.sales = data.sales;
+    this.categories = data.categories;
+    this.products = data.products;
   }
 }

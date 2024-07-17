@@ -1,8 +1,8 @@
 import { resolve } from 'path';
 
 // Folders
-export const CustomAssetsPathFolder = resolve('assets');
-export const DefaultAssetsFolder = resolve(__dirname, 'assets');
+export const CustomAssetsPathFolder = resolve('public');
+export const DefaultAssetsFolder = resolve(__dirname, 'public');
 
 // Image names
 export const ImgName = 'image-org.jpg';

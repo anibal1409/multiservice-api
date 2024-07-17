@@ -1,15 +1,13 @@
 export enum UserRole {
   Super = 'super',
-  Bionalist = 'bionalist',
-  Administrativessistant = 'administrative-assistant',
-  LaboratoryAssistant = 'laboratory-assistant',
+  SalesAdvisor = 'sales-advisor',
   Manager = 'manager',
+  WarehouseManager = 'warehouse-manager',
 }
 
 export const USER_ROLES_LIST = {
   [UserRole.Super]: 'Super usuario',
   [UserRole.Manager]: 'Gerente',
-  [UserRole.Bionalist]: 'Bionalista',
-  [UserRole.Administrativessistant]: 'Asistente administrativo',
-  [UserRole.LaboratoryAssistant]: 'Auxiliar de laboratorio',
+  [UserRole.SalesAdvisor]: 'Cajero',
+  [UserRole.WarehouseManager]: 'Jefe de almacén',
 };
