@@ -38,6 +38,7 @@ export class Sale extends IdEntity {
 
   @OneToMany(() => SaleProduct, (salesProducts) => salesProducts.sale)
   saleProducts: SaleProduct[];
+
   @OneToMany(() => SaleService, (saleService) => saleService.sale)
   saleServices: SaleService[];
 }

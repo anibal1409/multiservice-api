@@ -116,33 +116,60 @@
 
 
 
-  <p><span class="bold">Cliente:</span> {{ customer.idDocument }} - {{ customer.firstName }}, {{ customer.lastName }}.
+  <p><span class="bold">Cliente:</span> {{ customer.idDocument }} - {{ customer.name }}.
   </p>
 
-  <p class="center w-100 underline">Detalles de los productos</p>
-  <table class="products">
-    <thead>
-      <tr>
-        <th>N</th>
-        <th>Descripción</th>
-        <th>Precio</th>
-        <th>Cantidad</th>
-        <th>Subtotal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each products}}
-      <tr>
-        <td>{{ product.index }}</td>
-        <td>{{ product.name }}</td>
-        <td>{{ product.price }}</td>
-        <td>{{ product.amount }}</td>
-        <td>{{ product.subtotal }}</td>
-      </tr>
-      {{/each}}
-    </tbody>
-  </table>
+  {{#ifCond showProducts "&&" true}}
+    <p class="center w-100 underline">Detalles de los productos</p>
+    <table class="products">
+      <thead>
+        <tr>
+          <th>N</th>
+          <th>Descripción</th>
+          <th>Precio</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each products}}
+        <tr>
+          <td>{{ product.index }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ product.price }}</td>
+          <td>{{ product.amount }}</td>
+          <td>{{ product.subtotal }}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{/ifCond}}
 
+  {{#ifCond showServices "&&" true}}
+    <p class="center w-100 underline">Detalles de los servicios</p>
+    <table class="products">
+      <thead>
+        <tr>
+          <th>N</th>
+          <th>Descripción</th>
+          <th>Precio</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each services as |service| }}
+        <tr>
+          <td>{{ service.index }}</td>
+          <td>{{ service.name }}</td>
+          <td>{{ service.price }}</td>
+          <td>{{ service.amount }}</td>
+          <td>{{ service.subtotal }}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{/ifCond}}
 
   <p class="right w-100 "><span class="bold">Total:</span> {{ sale.total }}</p>
 

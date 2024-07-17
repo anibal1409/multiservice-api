@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  ArrayNotEmpty,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -18,6 +17,7 @@ import {
 import { IdCreateEntity } from '../../base/id.create';
 import { Sale } from '../entities';
 import { CreateSaleProductDto } from './create-sale-product.dto';
+import { CreateSaleServiceDto } from './create-sale-service.dto';
 
 export class CreateSaleDto extends PartialType(
   OmitType(Sale, [
@@ -27,6 +27,7 @@ export class CreateSaleDto extends PartialType(
     'customer',
     'status',
     'saleProducts',
+    'saleServices',
   ]),
 ) {
   @ApiProperty()
@@ -54,8 +55,13 @@ export class CreateSaleDto extends PartialType(
   @Type(() => IdCreateEntity)
   customer: IdCreateEntity;
 
-  @ApiProperty({ type: [CreateSaleProductDto] })
-  @ArrayNotEmpty()
+  @ApiPropertyOptional({ type: [CreateSaleProductDto] })
+  @IsOptional()
   @Type(() => CreateSaleProductDto)
   saleProducts: CreateSaleProductDto[];
+
+  @ApiPropertyOptional({ type: [CreateSaleServiceDto] })
+  @IsOptional()
+  @Type(() => CreateSaleServiceDto)
+  saleServices: CreateSaleServiceDto[];
 }

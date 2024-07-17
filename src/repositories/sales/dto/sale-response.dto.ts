@@ -18,6 +18,7 @@ import {
 import { Customer } from '../../customers/entities';
 import { Sale } from '../entities';
 import { CreateSaleProductDto } from './create-sale-product.dto';
+import { CreateSaleServiceDto } from './create-sale-service.dto';
 
 export class SaleRespondeDto {
   @ApiProperty()
@@ -55,6 +56,11 @@ export class SaleRespondeDto {
   @Type(() => CreateSaleProductDto)
   saleProducts: CreateSaleProductDto[];
 
+  @ApiProperty({ type: [CreateSaleServiceDto] })
+  @ArrayNotEmpty()
+  @Type(() => CreateSaleServiceDto)
+  saleServices: CreateSaleServiceDto[];
+
   constructor(data: Sale) {
     this.id = data.id;
     this.date = data.date;
@@ -63,5 +69,6 @@ export class SaleRespondeDto {
     this.total = data.total;
     this.stage = data.stage;
     this.saleProducts = data.saleProducts as any;
+    this.saleServices = data.saleServices as any;
   }
 }

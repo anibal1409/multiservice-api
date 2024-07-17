@@ -17,6 +17,7 @@ import {
   Sale,
   SaleProduct,
 } from '../repositories/sales/entities';
+import { SaleService } from '../repositories/sales/entities/saleService.entity';
 import { ReportsResponseDto } from './dto';
 import { CustomAssetsPathFolder } from './types/config';
 
@@ -27,6 +28,7 @@ export class ReportsService {
     customer: Customer,
     sale: Sale,
     products: SaleProduct[],
+    services: SaleService[],
   ): Promise<ReportsResponseDto> {
     const templateHtml = fs.readFileSync(
       path.resolve('./templates/sale.html'),
@@ -36,7 +38,7 @@ export class ReportsService {
     const _utcDate = new Date();
 
     const generateDate = new Date(
-      _utcDate.getTime() - _utcDate.getTimezoneOffset() * 60000
+      _utcDate.getTime() - _utcDate.getTimezoneOffset() * 60000,
     );
 
     const _pdfName = `nota_de_entrega_${generateDate
@@ -82,6 +84,9 @@ export class ReportsService {
           date: moment(sale.date).format('DD/MM/YYYY HH:mm'),
         },
         products: products,
+        showProducts: products.length > 0,
+        services: services,
+        showServices: services.length > 0,
         date: moment().format('DD/MM/YYYY HH:mm'),
         imgSystem: 'http://localhost:3333/public/logo.png',
         companyName: process.env.COMPANY_NAME,

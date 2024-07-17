@@ -2222,6 +2222,32 @@
           "product"
         ]
       },
+      "CreateSaleServiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "service": {
+            "$ref": "#/components/schemas/IdCreateEntity"
+          }
+        },
+        "required": [
+          "amount",
+          "price",
+          "subtotal",
+          "service"
+        ]
+      },
       "CreateSaleDto": {
         "type": "object",
         "properties": {
@@ -2246,6 +2272,12 @@
             "items": {
               "$ref": "#/components/schemas/CreateSaleProductDto"
             }
+          },
+          "saleServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateSaleServiceDto"
+            }
           }
         },
         "required": [
@@ -2253,7 +2285,8 @@
           "stage",
           "total",
           "customer",
-          "saleProducts"
+          "saleProducts",
+          "saleServices"
         ]
       },
       "Customer": {
@@ -2287,6 +2320,12 @@
             "items": {
               "$ref": "#/components/schemas/CreateSaleProductDto"
             }
+          },
+          "saleServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateSaleServiceDto"
+            }
           }
         },
         "required": [
@@ -2295,7 +2334,8 @@
           "stage",
           "total",
           "customer",
-          "saleProducts"
+          "saleProducts",
+          "saleServices"
         ]
       },
       "ReportsResponseDto": {
@@ -2336,6 +2376,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CreateSaleProductDto"
+            }
+          },
+          "saleServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateSaleServiceDto"
             }
           }
         }

@@ -14,14 +14,14 @@ export class SaleService {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
-  price!: string;
+  @Column('decimal', { nullable: true })
+  price!: number;
 
-  @Column({ nullable: true })
-  amount!: string;
+  @Column('decimal', { nullable: true })
+  amount!: number;
 
-  @Column({ nullable: true })
-  total!: string;
+  @Column('decimal', { nullable: true })
+  subtotal!: number;
 
   @ManyToOne(() => Service, (service) => service.sales)
   service: Service;

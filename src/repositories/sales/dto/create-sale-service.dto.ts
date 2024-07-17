@@ -14,12 +14,17 @@ export class CreateSaleServiceDto extends IdCreateEntity {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  amount: string;
+  amount: number;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  price: string;
+  price: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  subtotal: number;
 
   @ApiProperty({ type: IdCreateEntity })
   @IsNotEmpty()

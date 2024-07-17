@@ -32,6 +32,7 @@ import {
   Sale,
   SaleProduct,
 } from './entities';
+import { SaleService } from './entities/saleService.entity';
 import {
   STAGE_STATISTICS,
   STAGE_STUDY_VALUE,
@@ -45,6 +46,8 @@ export class SalesService implements CrudRepository<Sale> {
     private readonly repository: Repository<Sale>,
     @InjectRepository(SaleProduct)
     private readonly repositorySaleProducts: Repository<SaleProduct>,
+    @InjectRepository(SaleService)
+    private readonly repositorySaleServices: Repository<SaleService>,
     private readonly reportsService: ReportsService,
     private readonly productsService: ProductsService,
   ) {}
@@ -58,7 +61,13 @@ export class SalesService implements CrudRepository<Sale> {
         id,
       },
 
-      relations: ['customer', 'saleProducts', 'saleProducts.product'],
+      relations: [
+        'customer',
+        'saleProducts',
+        'saleProducts.product',
+        'saleServices',
+        'saleServices.service',
+      ],
     });
     if (!entity) {
       throw new NotFoundException('Venta no encontrada');
@@ -83,8 +92,22 @@ export class SalesService implements CrudRepository<Sale> {
         subtotal: saleProduct.subtotal,
       };
     });
+    const saleServices = createDto.saleServices.map((saleService) => {
+      return {
+        service: {
+          id: saleService.service.id,
+        },
+        sale: {
+          id: item.id,
+        },
+        price: saleService.price,
+        amount: saleService.amount,
+        subtotal: saleService.subtotal,
+      };
+    });
 
     await this.repositorySaleProducts.save(saleProducts);
+    await this.repositorySaleServices.save(saleServices);
     if (![StageSale.Cancelled].includes(item.stage as any)) {
       await this.updateProductsCreate(ids, saleProducts);
     }
@@ -115,8 +138,12 @@ export class SalesService implements CrudRepository<Sale> {
       relations: [
         'customer',
         'saleProducts',
+        'saleProducts',
         'saleProducts.product',
         'saleProducts.product.category',
+        'saleServices',
+        'saleServices.service',
+        'saleServices.service.category',
       ],
     });
   }
@@ -160,13 +187,34 @@ export class SalesService implements CrudRepository<Sale> {
       };
     });
 
+    const salesServices = updateDto.saleServices.map((saleService) => {
+      return {
+        id: saleService.id,
+        service: {
+          id: saleService.service.id,
+        },
+        sale: {
+          id,
+        },
+        price: saleService.price,
+        amount: saleService.amount,
+        subtotal: saleService.subtotal,
+      };
+    });
+
     await this.repositorySaleProducts.delete({
       sale: {
         id,
       },
     });
+    await this.repositorySaleServices.delete({
+      sale: {
+        id,
+      },
+    });
 
-    this.repositorySaleProducts.save(salesProducts);
+    await this.repositorySaleProducts.save(salesProducts);
+    await this.repositorySaleServices.save(salesServices);
     await this.updateProductsUpdate(
       ids,
       item.saleProducts,
@@ -322,10 +370,23 @@ export class SalesService implements CrudRepository<Sale> {
         index: i + 1,
       },
     }));
+
+    const saleServices = item.saleServices.map((saleService, i) => ({
+      price: USDollar.format(+saleService.price),
+      amount: saleService.amount,
+      subtotal: USDollar.format(+saleService.subtotal),
+      name: (saleService.service as any)?.name,
+      index: i + 1,
+    }));
     item.total = USDollar.format(+item.total) as any;
 
     return this.reportsService
-      .generatePdfSale(item.customer, item as any, saleProducts as any)
+      .generatePdfSale(
+        item.customer,
+        item as any,
+        saleProducts as any,
+        saleServices as any,
+      )
       .finally(() => {
         item2.stage = StageSale.Printed;
         this.update(id, item2);
