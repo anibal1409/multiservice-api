@@ -26,8 +26,8 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const config = new DocumentBuilder()
-    .setTitle('MI PROFE')
-    .setDescription('The MI PROFE-API description')
+    .setTitle('KTM')
+    .setDescription('The KTM-API description')
     .setVersion('1.0')
     .addCookieAuth()
     .addServer('api')
