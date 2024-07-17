@@ -1,1 +1,1 @@
-export * from './customer-type.eum';
+export * from './customer-type.enum';
