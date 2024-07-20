@@ -379,6 +379,10 @@ export class SalesService implements CrudRepository<Sale> {
       index: i + 1,
     }));
     item.total = USDollar.format(+item.total) as any;
+    item.stage =
+      item.stage === StageSale.Printed
+        ? STAGE_STUDY_VALUE[StageSale.Paid].name
+        : STAGE_STUDY_VALUE[item.stage].name;
 
     return this.reportsService
       .generatePdfSale(
@@ -388,8 +392,10 @@ export class SalesService implements CrudRepository<Sale> {
         saleServices as any,
       )
       .finally(() => {
-        item2.stage = StageSale.Printed;
-        this.update(id, item2);
+        if (item2.stage !== StageSale.Cancelled) {
+          item2.stage = StageSale.Printed;
+          this.update(id, item2);
+        }
       });
   }
 
