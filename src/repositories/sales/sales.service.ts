@@ -168,11 +168,15 @@ export class SalesService implements CrudRepository<Sale> {
 
     const ids: number[] = [];
     item.saleProducts.forEach((saleProduct) => {
-      ids.push(saleProduct.product.id);
+      ids.includes(saleProduct.product.id)
+        ? null
+        : ids.push(saleProduct.product.id);
     });
 
     const salesProducts = updateDto.saleProducts.map((saleProduct) => {
-      ids.push(saleProduct.product.id);
+      ids.includes(saleProduct.product.id)
+        ? null
+        : ids.push(saleProduct.product.id);
       return {
         id: saleProduct.id,
         product: {
@@ -219,7 +223,7 @@ export class SalesService implements CrudRepository<Sale> {
       ids,
       item.saleProducts,
       salesProducts,
-      item.stage as any,
+      updateDto.stage as any,
     );
 
     return this.findOne(save.id);
@@ -459,27 +463,34 @@ export class SalesService implements CrudRepository<Sale> {
   ) {
     let products = await this.productsService.findByIds(ids);
 
-    products = products.map((product) => {
-      const saleProduct: any = oldSaleProducts.find(
-        (saleProduct) => saleProduct.product.id === product.id,
-      );
-      return {
-        ...product,
-        stock: product.stock + (+saleProduct?.amount || 0),
-      };
-    });
-
-    if (![StageSale.Cancelled].includes(stage)) {
-      products = products.map((product) => {
-        const saleProduct: any = newSaleProducts.find(
+    console.log(oldSaleProducts);
+    products = await Promise.all(
+      products.map((product) => {
+        const saleProduct: any = oldSaleProducts.find(
           (saleProduct) => saleProduct.product.id === product.id,
         );
         return {
           ...product,
-          stock: product.stock - (+saleProduct?.amount || 0),
+          stock: product.stock + (+saleProduct?.amount || 0),
         };
-      });
+      }),
+    );
+    console.log(products);
+
+    if (![StageSale.Cancelled].includes(stage)) {
+      products = await Promise.all(
+        products.map((product) => {
+          const saleProduct: any = newSaleProducts.find(
+            (saleProduct) => saleProduct.product.id === product.id,
+          );
+          return {
+            ...product,
+            stock: product.stock - (+saleProduct?.amount || 0),
+          };
+        }),
+      );
     }
+    console.log(products);
 
     await this.productsService.saveMany(products);
   }
