@@ -2229,10 +2229,10 @@
             "type": "number"
           },
           "amount": {
-            "type": "string"
+            "type": "number"
           },
           "price": {
-            "type": "string"
+            "type": "number"
           },
           "subtotal": {
             "type": "number"
@@ -2284,9 +2284,7 @@
           "date",
           "stage",
           "total",
-          "customer",
-          "saleProducts",
-          "saleServices"
+          "customer"
         ]
       },
       "Customer": {
@@ -2403,6 +2401,9 @@
           },
           "orders": {
             "type": "number"
+          },
+          "services": {
+            "type": "number"
           }
         },
         "required": [
@@ -2410,7 +2411,8 @@
           "users",
           "sales",
           "products",
-          "orders"
+          "orders",
+          "services"
         ]
       },
       "MonthRespondeDto": {
@@ -2421,11 +2423,15 @@
           },
           "products": {
             "type": "object"
+          },
+          "services": {
+            "type": "object"
           }
         },
         "required": [
           "categories",
-          "products"
+          "products",
+          "services"
         ]
       },
       "CreateOrderProductDto": {

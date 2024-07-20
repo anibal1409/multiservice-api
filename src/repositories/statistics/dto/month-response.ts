@@ -34,6 +34,10 @@ export class MonthRespondeDto {
   @IsNotEmpty()
   products: { [key: string]: number };
 
+  @ApiProperty()
+  @IsNotEmpty()
+  services: { [key: string]: number };
+
   // @ApiProperty({ type: SaleGenderDto, isArray: true })
   // @IsNotEmpty()
   // sales: SaleGenderDto[];
@@ -42,5 +46,6 @@ export class MonthRespondeDto {
     // this.sales = data.sales;
     this.categories = data.categories;
     this.products = data.products;
+    this.services = data.services;
   }
 }

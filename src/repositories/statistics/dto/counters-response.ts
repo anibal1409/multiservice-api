@@ -31,11 +31,17 @@ export class CountersRespondeDto {
   @Type(() => Number)
   orders: number;
 
+  @ApiProperty()
+  @IsNotEmpty()
+  @Type(() => Number)
+  services: number;
+
   constructor(data: Counters) {
     this.products = data.products;
     this.customers = data.customers;
     this.sales = data.sales;
     this.users = data.users;
     this.orders = data.orders;
+    this.services = data.services;
   }
 }

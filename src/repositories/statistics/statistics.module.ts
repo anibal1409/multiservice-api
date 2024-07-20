@@ -4,6 +4,7 @@ import { CustomersModule } from '../customers';
 import { OrdersModule } from '../orders';
 import { ProductsModule } from '../products';
 import { SalesModule } from '../sales';
+import { ServicesModule } from '../services';
 import { UsersModule } from '../users';
 import { StatisticsController } from './statistics.controller';
 import { StatisticsService } from './statistics.service';
@@ -15,6 +16,7 @@ import { StatisticsService } from './statistics.service';
     SalesModule,
     ProductsModule,
     OrdersModule,
+    ServicesModule,
   ],
   controllers: [StatisticsController],
   providers: [StatisticsService],

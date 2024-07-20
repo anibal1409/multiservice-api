@@ -118,6 +118,7 @@ export class ServicesService implements CrudRepository<Service> {
     return await this.repository.count({
       where: {
         deleted: false,
+        status: true,
       },
     });
   }

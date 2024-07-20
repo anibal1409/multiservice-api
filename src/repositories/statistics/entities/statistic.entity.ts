@@ -6,4 +6,5 @@ export interface Counters {
   sales: number;
   products: number;
   orders: number;
+  services: number;
 }

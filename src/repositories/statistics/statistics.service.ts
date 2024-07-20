@@ -4,6 +4,7 @@ import { CustomersService } from '../customers/customers.service';
 import { OrdersService } from '../orders';
 import { ProductsService } from '../products';
 import { SalesService } from '../sales';
+import { ServicesService } from '../services';
 import { UsersService } from '../users/users.service';
 // eslint-disable-next-line prettier/prettier
 import {
@@ -21,6 +22,7 @@ export class StatisticsService {
     private readonly salesService: SalesService,
     private readonly productsService: ProductsService,
     private readonly ordersService: OrdersService,
+    private readonly servicesService: ServicesService,
   ) {}
 
   async counters(): Promise<CountersRespondeDto> {
@@ -35,6 +37,7 @@ export class StatisticsService {
       sales: await this.salesService.count(),
       products: await this.productsService.count(),
       orders: await this.ordersService.count(),
+      services: await this.servicesService.count(),
     };
   }
 
@@ -42,6 +45,7 @@ export class StatisticsService {
     return new MonthRespondeDto({
       categories: await this.salesService.generateMonthlyCategoriesStatistics(data),
       products: await this.salesService.generateMonthlySaleStatistics(data),
+      services: await this.salesService.generateMonthlySaleServicesStatistics(data),
     });
   }
 }

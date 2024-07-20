@@ -307,6 +307,52 @@ export class SalesService implements CrudRepository<Sale> {
     return productStatisticsArray;
   }
 
+  async generateMonthlySaleServicesStatistics(data?: GetSalesDto): Promise<
+    {
+      serviceName: string;
+      count: number;
+    }[]
+  > {
+    // Obtener estudios realizados en el mes y año especificados
+    const sales = await this.findAll(data);
+
+    // Inicializar mapa para contar la cantidad de cada tipo de examen realizado
+    const servicesCounts = new Map<string, number>();
+
+    // Contar la cantidad de cada tipo de examen realizado
+    await Promise.all(
+      sales.map(async (sale) => {
+        if (STAGE_STATISTICS.includes(sale.stage as any)) {
+          await Promise.all(
+            sale.saleServices.map(async (saleService) => {
+              const serviceName = saleService.service.name;
+              servicesCounts.set(
+                serviceName,
+                (servicesCounts.get(serviceName) || 0) + +saleService.amount,
+              );
+            }),
+          );
+        }
+      }),
+    );
+
+    // Ordenar los tipos de examen por la cantidad de veces que se han realizado
+    const sortedServicesCounts = [...servicesCounts.entries()].sort(
+      (a, b) => b[1] - a[1],
+    );
+
+    // Convertir el mapa en un arreglo de objetos
+    const servicesStatisticsArray = sortedServicesCounts.map(
+      ([serviceName, count]) => ({
+        serviceName,
+        count,
+      }),
+    );
+
+    // Retorna los tipos de examen más realizados en el mes como un arreglo de objetos
+    return servicesStatisticsArray;
+  }
+
   async generateMonthlyCategoriesStatistics(
     data?: GetSalesDto,
   ): Promise<{ category: string; count: number }[]> {
@@ -328,6 +374,17 @@ export class SalesService implements CrudRepository<Sale> {
                   categoryCounts.set(
                     category,
                     (categoryCounts.get(category) || 0) + +saleProduct.amount,
+                  );
+                }
+              }),
+            );
+            await Promise.all(
+              sale.saleServices.map(async (saleService) => {
+                const category = saleService.service?.category?.name;
+                if (category) {
+                  categoryCounts.set(
+                    category,
+                    (categoryCounts.get(category) || 0) + +saleService.amount,
                   );
                 }
               }),
