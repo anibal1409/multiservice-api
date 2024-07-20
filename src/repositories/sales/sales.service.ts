@@ -412,6 +412,11 @@ export class SalesService implements CrudRepository<Sale> {
           accumulator + +currentValue.amount,
         0,
       ),
+      services: sale.saleServices?.reduce(
+        (accumulator: number, currentValue: SaleService) =>
+          accumulator + +currentValue.amount,
+        0,
+      ),
     })) as any;
     const total = sales?.reduce(
       (accumulator: number, currentValue: Sale) =>
