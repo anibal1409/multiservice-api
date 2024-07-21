@@ -519,8 +519,6 @@ export class SalesService implements CrudRepository<Sale> {
     stage: StageSale,
   ) {
     let products = await this.productsService.findByIds(ids);
-
-    console.log(oldSaleProducts);
     products = await Promise.all(
       products.map((product) => {
         const saleProduct: any = oldSaleProducts.find(
@@ -532,7 +530,6 @@ export class SalesService implements CrudRepository<Sale> {
         };
       }),
     );
-    console.log(products);
 
     if (![StageSale.Cancelled].includes(stage)) {
       products = await Promise.all(
@@ -547,7 +544,6 @@ export class SalesService implements CrudRepository<Sale> {
         }),
       );
     }
-    console.log(products);
 
     await this.productsService.saveMany(products);
   }
